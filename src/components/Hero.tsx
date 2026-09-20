@@ -15,43 +15,87 @@ import {
 } from "./Icons"
 import portrait from "../assets/portrait.png"
 
+const TYPE_MS = 48
+const DELETE_MS = 32
+const HOLD_MS = 1600
+
 export function Hero() {
-  const [index, setIndex] = useState(0)
-  const [text, setText] = useState<string>(expertiseTopics[0])
-  const [deleting, setDeleting] = useState(false)
-  const [reduceMotion, setReduceMotion] = useState(false)
+  const [text, setText] = useState("")
 
   useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)")
-    const update = () => setReduceMotion(media.matches)
-    update()
-    media.addEventListener("change", update)
-    return () => media.removeEventListener("change", update)
-  }, [])
+    let cancelled = false
+    let index = 0
+    let deleting = false
+    let currentText = ""
+    let holdUntil = 0
+    let leftover = 0
+    let last = performance.now()
+    let frame = 0
 
-  useEffect(() => {
-    if (reduceMotion) {
-      setText(expertiseTopics[0])
-      return
+    const tick = (now: number) => {
+      if (cancelled) {
+        return
+      }
+
+      if (typeof document !== "undefined" && document.hidden) {
+        last = now
+        leftover = 0
+        frame = window.requestAnimationFrame(tick)
+        return
+      }
+
+      leftover += Math.min(now - last, 240)
+      last = now
+
+      const current = expertiseTopics[index]
+
+      if (holdUntil > now) {
+        frame = window.requestAnimationFrame(tick)
+        return
+      }
+
+      const step = deleting ? DELETE_MS : TYPE_MS
+      while (leftover >= step) {
+        leftover -= step
+
+        if (!deleting) {
+          if (currentText !== current) {
+            currentText = current.slice(0, currentText.length + 1)
+            setText(currentText)
+            if (currentText === current) {
+              holdUntil = now + HOLD_MS
+              deleting = true
+              leftover = 0
+              break
+            }
+          }
+        } else if (currentText) {
+          currentText = currentText.slice(0, -1)
+          setText(currentText)
+        } else {
+          deleting = false
+          index = (index + 1) % expertiseTopics.length
+          leftover = 0
+          break
+        }
+      }
+
+      frame = window.requestAnimationFrame(tick)
     }
 
-    const current = expertiseTopics[index]
-    const delay = !deleting && text === current ? 1800 : deleting ? 28 : 42
-    const timer = window.setTimeout(() => {
-      if (!deleting && text !== current) {
-        setText(current.slice(0, text.length + 1))
-      } else if (deleting && text !== "") {
-        setText(current.slice(0, text.length - 1))
-      } else if (!deleting && text === current) {
-        setDeleting(true)
-      } else {
-        setDeleting(false)
-        setIndex((value) => (value + 1) % expertiseTopics.length)
-      }
-    }, delay)
+    frame = window.requestAnimationFrame(tick)
+    const onVisible = () => {
+      last = performance.now()
+      leftover = 0
+    }
+    document.addEventListener("visibilitychange", onVisible)
 
-    return () => window.clearTimeout(timer)
-  }, [deleting, index, reduceMotion, text])
+    return () => {
+      cancelled = true
+      window.cancelAnimationFrame(frame)
+      document.removeEventListener("visibilitychange", onVisible)
+    }
+  }, [])
 
   return (
     <section id="home" aria-labelledby="hero-title">
@@ -68,9 +112,9 @@ export function Hero() {
           <p className="hero-org">{profile.organization}</p>
           <p className="glass expertise">
             <span className="expertise-label">Expertise in:</span>
-            <span>
+            <span className="expertise-typed">
               {text}
-              {reduceMotion ? null : <span className="cursor">|</span>}
+              <span className="cursor">|</span>
             </span>
           </p>
           <p className="hero-copy">{profile.summary}</p>

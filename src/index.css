@@ -313,6 +313,11 @@ p {
   animation: blink 1s step-end infinite;
 }
 
+.expertise-typed {
+  min-height: 1.4em;
+  overflow-wrap: anywhere;
+}
+
 .hero-copy {
   max-width: 58ch;
   color: hsl(var(--muted));
