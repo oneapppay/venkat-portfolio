@@ -15,86 +15,47 @@ import {
 } from "./Icons"
 import portrait from "../assets/portrait.png"
 
-const TYPE_MS = 48
-const DELETE_MS = 32
-const HOLD_MS = 1600
-
 export function Hero() {
-  const [text, setText] = useState("")
+  const [text, setText] = useState(expertiseTopics[0].slice(0, 1))
 
   useEffect(() => {
-    let cancelled = false
-    let index = 0
-    let deleting = false
-    let currentText = ""
-    let holdUntil = 0
-    let leftover = 0
-    let last = performance.now()
-    let frame = 0
+    let topic = 0
+    let pos = 1
+    let mode: "type" | "hold" | "delete" = "type"
+    let holdTicks = 0
+    setText(expertiseTopics[0].slice(0, 1))
 
-    const tick = (now: number) => {
-      if (cancelled) {
-        return
-      }
+    const step = () => {
+      const current = expertiseTopics[topic]
 
-      if (typeof document !== "undefined" && document.hidden) {
-        last = now
-        leftover = 0
-        frame = window.requestAnimationFrame(tick)
-        return
-      }
-
-      leftover += Math.min(now - last, 240)
-      last = now
-
-      const current = expertiseTopics[index]
-
-      if (holdUntil > now) {
-        frame = window.requestAnimationFrame(tick)
-        return
-      }
-
-      const step = deleting ? DELETE_MS : TYPE_MS
-      while (leftover >= step) {
-        leftover -= step
-
-        if (!deleting) {
-          if (currentText !== current) {
-            currentText = current.slice(0, currentText.length + 1)
-            setText(currentText)
-            if (currentText === current) {
-              holdUntil = now + HOLD_MS
-              deleting = true
-              leftover = 0
-              break
-            }
-          }
-        } else if (currentText) {
-          currentText = currentText.slice(0, -1)
-          setText(currentText)
-        } else {
-          deleting = false
-          index = (index + 1) % expertiseTopics.length
-          leftover = 0
-          break
+      if (mode === "type") {
+        pos = Math.min(current.length, pos + 1)
+        setText(current.slice(0, pos))
+        if (pos >= current.length) {
+          mode = "hold"
+          holdTicks = 0
         }
+        return
       }
 
-      frame = window.requestAnimationFrame(tick)
+      if (mode === "hold") {
+        holdTicks += 1
+        if (holdTicks >= 18) {
+          mode = "delete"
+        }
+        return
+      }
+
+      pos = Math.max(0, pos - 1)
+      setText(current.slice(0, pos))
+      if (pos === 0) {
+        topic = (topic + 1) % expertiseTopics.length
+        mode = "type"
+      }
     }
 
-    frame = window.requestAnimationFrame(tick)
-    const onVisible = () => {
-      last = performance.now()
-      leftover = 0
-    }
-    document.addEventListener("visibilitychange", onVisible)
-
-    return () => {
-      cancelled = true
-      window.cancelAnimationFrame(frame)
-      document.removeEventListener("visibilitychange", onVisible)
-    }
+    const timer = window.setInterval(step, 90)
+    return () => window.clearInterval(timer)
   }, [])
 
   return (

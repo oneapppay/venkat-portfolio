@@ -1270,6 +1270,10 @@ p {
     transition: none !important;
   }
 
+  .cursor {
+    animation: blink 1s step-end infinite !important;
+  }
+
   .glass:hover,
   .button:hover,
   .button:focus-visible {
