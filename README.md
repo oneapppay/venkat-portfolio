@@ -26,7 +26,7 @@ npm run preview
 
 This project is published as a **project site** at:
 
-https://yanova-labs.github.io/venkat-portfolio/
+https://oneapppay.github.io/venkat-portfolio/
 
 The production `base` path is `/venkat-portfolio/`. If the GitHub repository name is different, change `base` in `vite.config.ts` to match `"/<repo-name>/"`.
 
