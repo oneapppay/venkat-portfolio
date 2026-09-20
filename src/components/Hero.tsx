@@ -17,6 +17,12 @@ import portrait from "../assets/portrait.png"
 
 export function Hero() {
   const [text, setText] = useState(expertiseTopics[0].slice(0, 1))
+  const [photoLive, setPhotoLive] = useState(false)
+
+  useEffect(() => {
+    const start = window.setTimeout(() => setPhotoLive(true), 80)
+    return () => window.clearTimeout(start)
+  }, [])
 
   useEffect(() => {
     let topic = 0
@@ -131,7 +137,7 @@ export function Hero() {
             </a>
           </div>
         </div>
-        <div className="portrait-wrap">
+        <div className={photoLive ? "portrait-wrap is-animated" : "portrait-wrap"}>
           <div className="portrait-card">
             <span className="float-icon star">
               <IconStar width={20} height={20} />

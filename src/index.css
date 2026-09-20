@@ -478,6 +478,7 @@ p {
   display: grid;
   place-items: center;
   min-height: 420px;
+  padding: 28px 24px;
 }
 
 .portrait-card {
@@ -501,6 +502,7 @@ p {
   overflow: hidden;
   border-radius: 46% 54% 48% 52% / 42% 48% 52% 58%;
   background: linear-gradient(160deg, #5eead4 0%, #67e8f9 100%);
+  transform: translateZ(0);
 }
 
 .portrait-blob img {
@@ -510,6 +512,7 @@ p {
   border-radius: 50%;
   object-fit: cover;
   object-position: center 8%;
+  transform: translateZ(0);
 }
 
 .float-icon {
@@ -524,7 +527,8 @@ p {
   background: hsl(220 26% 10% / 0.92);
   border: 2px solid hsl(var(--primary) / 0.55);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
-  animation: float 6s ease-in-out infinite;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .float-icon.star {
@@ -535,7 +539,6 @@ p {
 .float-icon.code {
   top: 16%;
   right: -16px;
-  animation-delay: 0.8s;
 }
 
 .float-icon.zap {
@@ -544,6 +547,25 @@ p {
   bottom: -14px;
   color: hsl(var(--accent));
   border-color: hsl(var(--accent) / 0.7);
+}
+
+.portrait-wrap.is-animated .portrait-blob {
+  animation: blobMorph 8s ease-in-out infinite;
+}
+
+.portrait-wrap.is-animated .portrait-blob img {
+  animation: photoFloat 5.5s ease-in-out infinite;
+}
+
+.portrait-wrap.is-animated .float-icon {
+  animation: float 6s ease-in-out infinite;
+}
+
+.portrait-wrap.is-animated .float-icon.code {
+  animation-delay: 0.8s;
+}
+
+.portrait-wrap.is-animated .float-icon.zap {
   animation-delay: 1.4s;
 }
 
@@ -1169,8 +1191,19 @@ p {
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-16px); }
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -14px, 0); }
+}
+
+@keyframes blobMorph {
+  0%, 100% { border-radius: 46% 54% 48% 52% / 42% 48% 52% 58%; }
+  33% { border-radius: 54% 46% 42% 58% / 48% 42% 58% 52%; }
+  66% { border-radius: 42% 58% 54% 46% / 58% 52% 42% 48%; }
+}
+
+@keyframes photoFloat {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -10px, 0); }
 }
 
 @media (max-width: 980px) {
@@ -1272,6 +1305,26 @@ p {
 
   .cursor {
     animation: blink 1s step-end infinite !important;
+  }
+
+  .portrait-wrap.is-animated .portrait-blob {
+    animation: blobMorph 8s ease-in-out infinite !important;
+  }
+
+  .portrait-wrap.is-animated .portrait-blob img {
+    animation: photoFloat 5.5s ease-in-out infinite !important;
+  }
+
+  .portrait-wrap.is-animated .float-icon {
+    animation: float 6s ease-in-out infinite !important;
+  }
+
+  .portrait-wrap.is-animated .float-icon.code {
+    animation-delay: 0.8s !important;
+  }
+
+  .portrait-wrap.is-animated .float-icon.zap {
+    animation-delay: 1.4s !important;
   }
 
   .glass:hover,
